@@ -6,3 +6,14 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+winit = "0.29.9"
+glutin = "0.31.2"
+glutin-winit = "0.4.2"
+raw-window-handle = "0.5.2"
+gl = "0.14.0"
+skia-safe = { version = "0.69.0", features = ["gl"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+
+
+[target.'cfg(target_os = "windows")'.dependencies]
