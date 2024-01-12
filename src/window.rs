@@ -7,20 +7,23 @@ use winit::event_loop::{EventLoopWindowTarget};
 use winit::window::{WindowBuilder, WindowId};
 use winit::window::Window as WinitWindow;
 use crate::graphic::Graphic;
+use crate::ui::UI;
 
 pub struct Window{
     inner_window: WinitWindow,
-    graphic: Graphic
+    graphic: Graphic,
+    ui: Box<dyn UI>
 }
 
 impl Window {
-    pub fn new<T: 'static>(wb: WindowBuilder, event_loop: &EventLoopWindowTarget<T>) -> Self {
+    pub fn new<T: 'static>(wb: WindowBuilder, event_loop: &EventLoopWindowTarget<T>, ui: impl UI + 'static) -> Self {
         let (window, gl_config) = create_window_and_gl_config(wb, event_loop);
         let inner_window = window.expect("create winit window error");
         let graphic = Graphic::new(inner_window.inner_size(), inner_window.raw_window_handle(), gl_config);
         Window{
             inner_window,
-            graphic
+            graphic,
+            ui: Box::new(ui)
         }
     }
     
@@ -34,7 +37,9 @@ impl Window {
 
     pub fn draw(&mut self){
         self.inner_window.pre_present_notify();
-        self.graphic.draw();
+        self.graphic.draw(|canvas|{
+            self.ui.draw(canvas);
+        });
         self.graphic.submit();
     }
 

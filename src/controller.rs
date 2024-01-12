@@ -2,6 +2,7 @@ use winit::event_loop::EventLoopWindowTarget;
 use winit::window::{WindowBuilder, WindowId};
 use crate::application::Application;
 use crate::custom_event::CustomEvent;
+use crate::ui::UI;
 use crate::window::Window;
 
 pub struct Controller<'a> {
@@ -17,8 +18,8 @@ impl<'a> Controller<'a> {
         }
     }
 
-    pub fn new_window(&mut self, wb: WindowBuilder) -> Option<&mut Window> {
-        let window = Window::new(wb, self.event_loop);
+    pub fn new_window(&mut self, wb: WindowBuilder,  ui: impl UI + 'static) -> Option<&mut Window> {
+        let window = Window::new(wb, self.event_loop, ui);
         let window_id = window.id();
         self.application.add_window(window_id, window)
     }

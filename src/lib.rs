@@ -6,3 +6,4 @@ pub mod application;
 mod custom_event;
 pub mod event_handler;
 pub mod controller;
+pub mod ui;

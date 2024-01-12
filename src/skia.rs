@@ -4,7 +4,7 @@ use glutin::config::{Config, GlConfig};
 use glutin::display::{GetGlDisplay, GlDisplay};
 use skia_safe::gpu::{backend_render_targets, DirectContext, gl::{Interface, Format}, SurfaceOrigin};
 use skia_safe::gpu::gl::FramebufferInfo;
-use skia_safe::{ColorType, gpu, Surface, Color};
+use skia_safe::{ColorType, gpu, Surface, Canvas};
 
 pub struct SkiaGLGraphic {
     surface: Surface,
@@ -49,9 +49,9 @@ impl SkiaGLGraphic {
         }
     }
 
-    pub fn draw(&mut self){
+    pub fn draw(&mut self, draw_fn: impl FnOnce(&Canvas)){
         let canvas = self.surface.canvas();
-        canvas.clear(Color::YELLOW);
+        draw_fn(canvas);
     }
 
     pub fn submit(&mut self){

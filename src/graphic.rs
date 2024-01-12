@@ -1,6 +1,7 @@
 use glutin::config::Config;
 
 use raw_window_handle::RawWindowHandle;
+use skia_safe::Canvas;
 use winit::dpi::PhysicalSize;
 
 use crate::glutin_graphic::GlutinGraphic;
@@ -22,8 +23,8 @@ impl Graphic {
         }
     }
 
-    pub fn draw(&mut self) {
-        self.skia_graphic.draw();
+    pub fn draw(&mut self, draw_fn: impl FnOnce(&Canvas)) {
+        self.skia_graphic.draw(draw_fn);
     }
 
     pub fn submit(&mut self) {
