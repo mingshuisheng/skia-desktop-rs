@@ -1,40 +1,19 @@
 use winit::{
-    event::{Event, WindowEvent},
-    event_loop::EventLoop,
     window::WindowBuilder,
 };
-
-mod graphic;
-mod window;
-mod skia;
-mod glutin_graphic;
+use skia_desktop_rs::application::{EventHandler, launch};
 
 fn main() {
-    let event_loop = EventLoop::new().unwrap();
 
-    let window_builder = WindowBuilder::new()
-        .with_title("A fantastic window!")
-        .with_inner_size(winit::dpi::LogicalSize::new(128.0, 128.0));
+    let mut event_handler = EventHandler::default();
 
-    let mut window = window::Window::new(window_builder, &event_loop);
+    event_handler.set_init_handler(Some(Box::new(|mut controller| {
+        let window_builder = WindowBuilder::new()
+            .with_title("A fantastic window!")
+            .with_inner_size(winit::dpi::LogicalSize::new(128.0, 128.0));
+        let window = controller.new_window(window_builder).unwrap();
+        window.request_redraw();
+    })));
 
-    event_loop.run(move |event, elwt| {
-        match event {
-            Event::WindowEvent { event, .. }  => match event {
-                WindowEvent::Resized(physical_size) => {
-                    window.on_resize(physical_size);
-                }
-                WindowEvent::CloseRequested => elwt.exit(),
-                WindowEvent::RedrawRequested => {
-                    window.draw();
-                }
-                _ => (),
-            },
-            Event::AboutToWait => {
-                window.request_redraw();
-            }
-
-            _ => (),
-        }
-    }).unwrap();
+    launch(event_handler);
 }

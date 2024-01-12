@@ -2,8 +2,9 @@ use glutin::config::{ConfigTemplateBuilder, Config as GLConfig, GlConfig};
 use glutin_winit::DisplayBuilder;
 use raw_window_handle::HasRawWindowHandle;
 use winit::dpi::PhysicalSize;
-use winit::event_loop::EventLoop;
-use winit::window::WindowBuilder;
+use winit::event::WindowEvent;
+use winit::event_loop::{EventLoopWindowTarget};
+use winit::window::{WindowBuilder, WindowId};
 use winit::window::Window as WinitWindow;
 use crate::graphic::Graphic;
 
@@ -13,7 +14,7 @@ pub struct Window{
 }
 
 impl Window {
-    pub fn new<T: 'static>(wb: WindowBuilder, event_loop: &EventLoop<T>) -> Self {
+    pub fn new<T: 'static>(wb: WindowBuilder, event_loop: &EventLoopWindowTarget<T>) -> Self {
         let (window, gl_config) = create_window_and_gl_config(wb, event_loop);
         let inner_window = window.expect("create winit window error");
         let graphic = Graphic::new(inner_window.inner_size(), inner_window.raw_window_handle(), gl_config);
@@ -21,6 +22,10 @@ impl Window {
             inner_window,
             graphic
         }
+    }
+    
+    pub fn id(&self) -> WindowId{
+        self.inner_window.id()
     }
 
     pub fn on_resize(&mut self, size: PhysicalSize<u32>){
@@ -36,9 +41,48 @@ impl Window {
     pub fn request_redraw(&self){
         self.inner_window.request_redraw();
     }
+    
+    pub fn handle_event(&mut self, event: WindowEvent){
+        match event {
+            WindowEvent::ActivationTokenDone { .. } => {}
+            WindowEvent::Resized(size) => {
+                self.on_resize(size);
+            }
+            WindowEvent::Moved(_) => {}
+            WindowEvent::CloseRequested => {}
+            WindowEvent::Destroyed => {}
+            WindowEvent::DroppedFile(_) => {}
+            WindowEvent::HoveredFile(_) => {}
+            WindowEvent::HoveredFileCancelled => {}
+            WindowEvent::Focused(_) => {}
+            WindowEvent::KeyboardInput { .. } => {}
+            WindowEvent::ModifiersChanged(_) => {}
+            WindowEvent::Ime(_) => {}
+            WindowEvent::CursorMoved { .. } => {}
+            WindowEvent::CursorEntered { .. } => {}
+            WindowEvent::CursorLeft { .. } => {}
+            WindowEvent::MouseWheel { .. } => {}
+            WindowEvent::MouseInput { .. } => {}
+            WindowEvent::TouchpadMagnify { .. } => {}
+            WindowEvent::SmartMagnify { .. } => {}
+            WindowEvent::TouchpadRotate { .. } => {}
+            WindowEvent::TouchpadPressure { .. } => {}
+            WindowEvent::AxisMotion { .. } => {}
+            WindowEvent::Touch(_) => {}
+            WindowEvent::ScaleFactorChanged { .. } => {}
+            WindowEvent::ThemeChanged(_) => {}
+            WindowEvent::Occluded(_) => {}
+            WindowEvent::RedrawRequested => {
+                self.draw();
+            }
+        }
+    }
+
+    pub(crate) fn on_close(&self) {
+    }
 }
 
-fn create_window_and_gl_config<T: 'static>(wb: WindowBuilder, event_loop: &EventLoop<T>) -> (Option<WinitWindow>, GLConfig){
+fn create_window_and_gl_config<T: 'static>(wb: WindowBuilder, event_loop: &EventLoopWindowTarget<T>) -> (Option<WinitWindow>, GLConfig){
     let template = ConfigTemplateBuilder::new()
         .with_alpha_size(8)
         .with_transparency(true);

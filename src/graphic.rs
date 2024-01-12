@@ -13,6 +13,7 @@ pub struct Graphic {
 
 impl Graphic {
     pub fn new(size: PhysicalSize<u32>, raw_window_handle: RawWindowHandle, gl_config: Config) -> Self {
+        // Must be initialized first glutin
         let glutin_graphic = GlutinGraphic::new(size.into(), raw_window_handle, gl_config.clone());
         let skia_graphic = SkiaGLGraphic::new(size.into(), gl_config);
         Graphic {
