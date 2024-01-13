@@ -27,4 +27,12 @@ impl<'a> Context<'a> {
     pub fn get_mut_window(&mut self, window_id: WindowId) -> Option<&mut Window> {
         self.application.get_mut_window(window_id)
     }
+
+    pub fn close_window(&mut self, window_id: WindowId){
+        self.application.request_close_window(window_id);
+    }
+
+    pub fn exit(&mut self){
+        self.application.request_exit();
+    }
 }

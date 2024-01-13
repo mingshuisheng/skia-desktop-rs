@@ -1,4 +1,3 @@
-use std::ops::{Deref, DerefMut};
 use winit::event_loop::EventLoopWindowTarget;
 use winit::window::{Window};
 use crate::application::Application;
@@ -7,7 +6,7 @@ use crate::custom_event::CustomEvent;
 
 pub struct WindowContext<'a> {
     application_context: Context<'a>,
-    winit_window: &'a mut Window
+    winit_window: &'a mut Window,
 }
 
 impl<'a> WindowContext<'a> {
@@ -21,18 +20,16 @@ impl<'a> WindowContext<'a> {
     pub fn request_redraw(&mut self) {
         self.winit_window.request_redraw();
     }
-}
 
-impl<'a> Deref for WindowContext<'a>{
-    type Target = Context<'a>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.application_context
+    pub fn start_drag(&mut self) {
+        self.winit_window.drag_window().unwrap();
     }
-}
 
-impl<'a> DerefMut for WindowContext<'a>{
-    fn deref_mut(&mut self) -> &mut Self::Target {
+    pub fn close_window(&mut self){
+        self.application_context.close_window(self.winit_window.id());
+    }
+
+    pub fn application(&mut self) -> &mut Context<'a>{
         &mut self.application_context
     }
 }
