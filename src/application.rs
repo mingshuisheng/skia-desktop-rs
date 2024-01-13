@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use winit::event::{Event, StartCause};
 use winit::event_loop::{EventLoop, EventLoopBuilder};
 use winit::window::WindowId;
-use crate::controller::Controller;
+use crate::context::context::Context;
 use crate::custom_event::CustomEvent;
 use crate::event_handler::EventHandler;
 use crate::window::Window;
@@ -43,8 +43,8 @@ pub fn launch(event_handler: EventHandler) {
     event_loop.run(move |event, event_loop| {
         match event {
             Event::NewEvents(StartCause::Init) => {
-                let controller = Controller::new(&mut application, event_loop);
-                event_handler.on_init(controller);
+                let mut context = Context::new(&mut application, event_loop);
+                event_handler.on_init(&mut context);
             }
             Event::WindowEvent { event, window_id } => {
                 if let winit::event::WindowEvent::CloseRequested = event {

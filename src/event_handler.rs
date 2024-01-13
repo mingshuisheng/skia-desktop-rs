@@ -1,7 +1,8 @@
-use crate::controller::Controller;
+use crate::context::context::Context;
+
 
 pub struct EventHandler {
-    handle_init: Option<Box<dyn Fn(Controller)>>,
+    handle_init: Option<Box<dyn Fn(&mut Context)>>,
 }
 
 impl EventHandler {
@@ -11,15 +12,15 @@ impl EventHandler {
         }
     }
 
-    pub fn add_init_handler(&mut self, handle_init: impl Fn(Controller) + 'static) {
+    pub fn add_init_handler(&mut self, handle_init: impl Fn(&mut Context) + 'static) {
         self.handle_init = Some(
             Box::new(handle_init)
         )
     }
 
-    pub(crate) fn on_init(&self, controller: Controller) {
+    pub(crate) fn on_init(&self, event_context: &mut Context) {
         if let Some(handler) = &self.handle_init {
-            handler(controller);
+            handler(event_context);
         }
     }
 }

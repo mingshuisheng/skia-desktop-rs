@@ -7,7 +7,7 @@ use winit::event_loop::{EventLoopWindowTarget};
 use winit::window::{WindowBuilder, WindowId};
 use winit::window::Window as WinitWindow;
 use crate::application::Application;
-use crate::context::event_context::EventContext;
+use crate::context::window_context::WindowContext;
 use crate::custom_event::CustomEvent;
 use crate::graphic::Graphic;
 use crate::ui::UI;
@@ -84,7 +84,7 @@ impl Window {
                 self.draw();
             }
         }
-        self.ui.handle_event(event, EventContext::new(application, event_loop, self.id()));
+        self.ui.handle_event(event, &mut WindowContext::new(application, event_loop, &mut self.inner_window));
     }
 
     pub(crate) fn on_close(&self) {
