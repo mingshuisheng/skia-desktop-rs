@@ -6,6 +6,9 @@ use winit::event::WindowEvent;
 use winit::event_loop::{EventLoopWindowTarget};
 use winit::window::{WindowBuilder, WindowId};
 use winit::window::Window as WinitWindow;
+use crate::application::Application;
+use crate::context::event_context::EventContext;
+use crate::custom_event::CustomEvent;
 use crate::graphic::Graphic;
 use crate::ui::UI;
 
@@ -47,7 +50,7 @@ impl Window {
         self.inner_window.request_redraw();
     }
     
-    pub fn handle_event(&mut self, event: WindowEvent){
+    pub fn handle_event(&mut self, event: WindowEvent, application: &mut Application, event_loop: &EventLoopWindowTarget<CustomEvent>){
         match event {
             WindowEvent::ActivationTokenDone { .. } => {}
             WindowEvent::Resized(size) => {
@@ -81,6 +84,7 @@ impl Window {
                 self.draw();
             }
         }
+        self.ui.handle_event(event, EventContext::new(application, event_loop, self.id()));
     }
 
     pub(crate) fn on_close(&self) {

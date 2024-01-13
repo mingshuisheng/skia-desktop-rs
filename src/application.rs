@@ -55,8 +55,9 @@ pub fn launch(event_handler: EventHandler) {
                         event_loop.exit();
                     }
                 }
-                if let Some(window) = application.window_map.get_mut(&window_id) {
-                    window.handle_event(event)
+                if let Some(mut window) = application.window_map.remove(&window_id) {
+                    window.handle_event(event, &mut application, event_loop);
+                    application.window_map.insert(window_id, window);
                 }
             }
             Event::DeviceEvent { .. } => {}
