@@ -1,13 +1,26 @@
+## Skia Desktop Development
+a temporary gui lib for myself
+
+Example
+```rust
 use skia_safe::{Canvas, Color};
 use winit::event::{ElementState, MouseButton, WindowEvent};
 use winit::window::WindowBuilder;
-use skia_desktop_rs::application::launch;
-use skia_desktop_rs::context::window_context::WindowContext;
-use skia_desktop_rs::event_handler::EventHandler;
-use skia_desktop_rs::ui::UI;
+use skia_desktop::application::launch;
+use skia_desktop::context::window_context::WindowContext;
+use skia_desktop::event_handler::EventHandler;
+use skia_desktop::ui::UI;
 
 pub struct MyUI {
     color: Color,
+}
+
+impl MyUI {
+    fn new() -> Self {
+        MyUI {
+            color: Color::YELLOW
+        }
+    }
 }
 
 impl UI for MyUI {
@@ -32,14 +45,6 @@ impl UI for MyUI {
     }
 }
 
-impl Default for MyUI {
-    fn default() -> Self {
-        MyUI {
-            color: Color::YELLOW
-        }
-    }
-}
-
 fn main() {
     let mut event_handler = EventHandler::default();
 
@@ -47,9 +52,10 @@ fn main() {
         let window_builder = WindowBuilder::new()
             .with_title("A fantastic window!")
             .with_inner_size(winit::dpi::LogicalSize::new(256.0, 256.0));
-        let window = context.new_window(window_builder, MyUI::default()).unwrap();
+        let window = context.new_window(window_builder, MyUI::new()).unwrap();
         window.request_redraw();
     });
 
     launch(event_handler);
 }
+```
