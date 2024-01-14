@@ -7,6 +7,7 @@ mod custom_event;
 pub mod event_handler;
 pub mod ui;
 pub mod context;
+pub mod event;
 
 pub use skia_safe;
 

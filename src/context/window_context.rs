@@ -1,8 +1,7 @@
-use winit::event_loop::EventLoopWindowTarget;
+use std::time::Duration;
 use winit::window::{Window};
-use crate::application::Application;
+use crate::application::{TimerId};
 use crate::context::context::Context;
-use crate::custom_event::CustomEvent;
 
 pub struct WindowContext<'a> {
     application_context: Context<'a>,
@@ -10,9 +9,9 @@ pub struct WindowContext<'a> {
 }
 
 impl<'a> WindowContext<'a> {
-    pub(crate) fn new(application: &'a mut Application, event_loop: &'a EventLoopWindowTarget<CustomEvent>, winit_window: &'a mut Window) -> Self {
+    pub(crate) fn new(application_context: Context<'a>, winit_window: &'a mut Window) -> Self {
         Self {
-            application_context: Context::new(application, event_loop),
+            application_context,
             winit_window,
         }
     }
@@ -25,11 +24,41 @@ impl<'a> WindowContext<'a> {
         self.winit_window.drag_window().unwrap();
     }
 
-    pub fn close_window(&mut self){
+    pub fn close_window(&mut self) {
         self.application_context.close_window(self.winit_window.id());
     }
 
-    pub fn application(&mut self) -> &mut Context<'a>{
+    pub fn application(&mut self) -> &mut Context<'a> {
         &mut self.application_context
+    }
+
+    pub fn add_timer(&mut self, time: Duration) {
+        let window_id = self.winit_window.id();
+        self.application_context.set_timer(time, move |id, application, event_loop| {
+            let window = application.remove_window(window_id);
+            if let Some(mut window) = window {
+                window.on_timeout(id, application, event_loop);
+                application.add_window(window_id, window);
+            }
+        });
+    }
+
+    pub fn remove_timer(&mut self, id: TimerId) {
+        self.application_context.clear_timer(id);
+    }
+
+    pub fn add_interval(&mut self, time: Duration) {
+        let window_id = self.winit_window.id();
+        self.application_context.set_interval(time, move |id, application, event_loop| {
+            let window = application.remove_window(window_id);
+            if let Some(mut window) = window {
+                window.on_interval(id, application, event_loop);
+                application.add_window(window_id, window);
+            }
+        });
+    }
+
+    pub fn remove_interval(&mut self, id: TimerId) {
+        self.application_context.clear_interval(id);
     }
 }

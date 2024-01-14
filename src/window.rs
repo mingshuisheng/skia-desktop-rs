@@ -6,16 +6,18 @@ use winit::event::WindowEvent;
 use winit::event_loop::{EventLoopWindowTarget};
 use winit::window::{WindowBuilder, WindowId};
 use winit::window::Window as WinitWindow;
-use crate::application::Application;
+use crate::application::{Application, TimerId};
+use crate::context::context::Context;
 use crate::context::window_context::WindowContext;
 use crate::custom_event::CustomEvent;
+use crate::event::ui_event::UIEvent;
 use crate::graphic::Graphic;
 use crate::ui::UI;
 
-pub struct Window{
+pub struct Window {
     inner_window: WinitWindow,
     graphic: Graphic,
-    ui: Box<dyn UI>
+    ui: Box<dyn UI>,
 }
 
 impl Window {
@@ -23,34 +25,46 @@ impl Window {
         let (window, gl_config) = create_window_and_gl_config(wb, event_loop);
         let inner_window = window.expect("create winit window error");
         let graphic = Graphic::new(inner_window.inner_size(), inner_window.raw_window_handle(), gl_config);
-        Window{
+        Window {
             inner_window,
             graphic,
-            ui: Box::new(ui)
+            ui: Box::new(ui),
         }
     }
-    
-    pub fn id(&self) -> WindowId{
+
+    pub fn id(&self) -> WindowId {
         self.inner_window.id()
     }
 
-    pub fn on_resize(&mut self, size: PhysicalSize<u32>){
+    pub fn on_resize(&mut self, size: PhysicalSize<u32>) {
         self.graphic.on_resize(size)
     }
 
-    pub fn draw(&mut self){
+    pub fn on_created(&mut self, application: &mut Application, event_loop: &EventLoopWindowTarget<CustomEvent>){
+        self.ui.handle_event(UIEvent::WindowCreate, &mut WindowContext::new(Context::new(application, event_loop), &mut self.inner_window));
+    }
+
+    pub fn on_timeout(&mut self, id: TimerId, application: &mut Application, event_loop: &EventLoopWindowTarget<CustomEvent>){
+        self.ui.handle_event(UIEvent::TimerOut(id), &mut WindowContext::new(Context::new(application, event_loop), &mut self.inner_window));
+    }
+
+    pub fn on_interval(&mut self, id: TimerId, application: &mut Application, event_loop: &EventLoopWindowTarget<CustomEvent>){
+        self.ui.handle_event(UIEvent::Interval(id), &mut WindowContext::new(Context::new(application, event_loop), &mut self.inner_window));
+    }
+
+    pub fn draw(&mut self) {
         self.inner_window.pre_present_notify();
-        self.graphic.draw(|canvas|{
+        self.graphic.draw(|canvas| {
             self.ui.draw(canvas);
         });
         self.graphic.submit();
     }
 
-    pub fn request_redraw(&self){
+    pub fn request_redraw(&self) {
         self.inner_window.request_redraw();
     }
-    
-    pub fn handle_event(&mut self, event: WindowEvent, application: &mut Application, event_loop: &EventLoopWindowTarget<CustomEvent>){
+
+    pub fn handle_event(&mut self, event: WindowEvent, application: &mut Application, event_loop: &EventLoopWindowTarget<CustomEvent>) {
         match event {
             WindowEvent::ActivationTokenDone { .. } => {}
             WindowEvent::Resized(size) => {
@@ -84,14 +98,13 @@ impl Window {
                 self.draw();
             }
         }
-        self.ui.handle_event(event, &mut WindowContext::new(application, event_loop, &mut self.inner_window));
+        self.ui.handle_event(UIEvent::Other(event), &mut WindowContext::new(Context::new(application, event_loop), &mut self.inner_window));
     }
 
-    pub(crate) fn on_close(&self) {
-    }
+    pub(crate) fn on_close(&self) {}
 }
 
-fn create_window_and_gl_config<T: 'static>(wb: WindowBuilder, event_loop: &EventLoopWindowTarget<T>) -> (Option<WinitWindow>, GLConfig){
+fn create_window_and_gl_config<T: 'static>(wb: WindowBuilder, event_loop: &EventLoopWindowTarget<T>) -> (Option<WinitWindow>, GLConfig) {
     let template = ConfigTemplateBuilder::new()
         .with_alpha_size(8)
         .with_transparency(true);
